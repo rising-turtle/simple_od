@@ -12,3 +12,6 @@ target_link_libraries(match_example ${OpenCV_LIBS})
 
 add_executable(test_detector test_detector.cpp detector.cpp)
 target_link_libraries(test_detector ${OpenCV_LIBS})
+
+add_executable(test_tracker test_tracker.cpp tracker.cpp)
+target_link_libraries(test_tracker ${OpenCV_LIBS})
