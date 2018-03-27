@@ -1,7 +1,7 @@
 /*
 	Mar. 27 2018, He Zhang, hxzhang1@ualr.edu
 	
-	show rs200's image and save them on disk
+	track object using rs200's data 
 
 */
 
@@ -10,12 +10,12 @@
 #include <GLFW/glfw3.h>
 #include "opencv2/opencv.hpp"
 #include <sstream>
+#include "detector.h"
 
 using namespace cv; 
 using namespace std; 
 
-void showGLFW(rs::device* dev); 
-void showOpenCV(rs::device* dev); 
+void detectObj(rs::device* dev); 
 
 int main(int argc, char* argv[])
 {
@@ -31,15 +31,18 @@ int main(int argc, char* argv[])
 	dev->enable_stream(rs::stream::color, 640, 480, rs::format::rgb8, 60); 
 	dev->start(); 
 	
-	showOpenCV(dev); 
+	detectObj(dev); 
 	return EXIT_SUCCESS; 
 
 }
 
 
-void showOpenCV(rs::device* dev)
+void detectObj(rs::device* dev)
 {
 	char key = 1; 
+
+	// 
+
 	while(key != 27)
 	{
 		dev->wait_for_frames(); 
@@ -49,40 +52,7 @@ void showOpenCV(rs::device* dev)
 		cv::imshow("rgb", rgb);
 		key = cv::waitKey(30); 
 
-		// cout <<"key = "<<(int)(key)<<endl; 
-		if(key == 's')
-		{
-			static int cnt = 1;
-			cout <<"key = "<<(int)(key)<<" save image "<<endl; 
-			stringstream ss; 
-			ss <<"../imgs/ob_template/rgb_"<<cnt++<<".png";	
-			imwrite(ss.str().c_str(), rgb);
-		}
 	}
-}
-
-
-void showGLFW(rs::device* dev)
-{
-	glfwInit();
-	GLFWwindow * win = glfwCreateWindow(640, 480, "show rs200 image", nullptr, nullptr); 
-	glfwMakeContextCurrent(win); 
-
-	while(!glfwWindowShouldClose(win))
-	{	
-		// 
-		glfwPollEvents(); 
-		dev->wait_for_frames(); 
-
-		glClear(GL_COLOR_BUFFER_BIT); 
-		glPixelZoom(1, -1); 
-
-		glRasterPos2f(-1, 1);
-		glDrawPixels(640, 480, GL_RGB, GL_UNSIGNED_BYTE, dev->get_frame_data(rs::stream::color));
-
-		glfwSwapBuffers(win);
-	}
-	return ; 
 }
 
 
