@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <string>
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -26,13 +27,30 @@ public:
     void init(cv::Mat obj);
 
     bool detect(cv::Mat img, vector<cv::Point2f>&, bool draw_result = false);
+    bool detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& des_scene, vector<cv::Point2f>& , bool draw_result = false); 
 
     void extractFeatures(const cv::Mat img, vector<cv::KeyPoint>& kpts, cv::Mat& des); 
-    
+    void rejectWithF(vector<cv::Point2f>& obj, vector<cv::Point2f>& scene, vector<uchar>& status);    
+
     cv::Mat mObjImg;
     std::vector<cv::KeyPoint> mObjPts;
     cv::Mat mObjDes;
     bool mbIntialized;
     int mMatchThresold; 
 };
+
+class CMultiDector
+{
+public:
+	CMultiDector(std::string dir=""); 
+	virtual ~CMultiDector(); 
+	void init(std::string dir); 
+	
+    	bool detect(cv::Mat img, vector<cv::Point2f>&, bool draw_result = false);
+
+	std::vector<CDetector*> mvDector; 
+	bool mbIntialized; 
+};
+
+
 

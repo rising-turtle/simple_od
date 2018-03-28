@@ -12,19 +12,25 @@ include_directories(/usr/local/include /home/hannah/work/librealsense/include)
 link_directories(/usr/local/lib /home/hannah/work/librealsense/build)
 
 
+## compile into a library 
+add_library(simple_od global.cpp detector.cpp tracker.cpp)
+target_link_libraries(simple_od ${OpenCV_LIBS})
+
+
 add_executable(match_example match_example.cpp)
 target_link_libraries(match_example ${OpenCV_LIBS})
 
 
-add_executable(test_detector test_detector.cpp detector.cpp)
-target_link_libraries(test_detector ${OpenCV_LIBS})
+add_executable(test_detector test_detector.cpp )
+target_link_libraries(test_detector ${OpenCV_LIBS} simple_od)
 
-add_executable(test_tracker test_tracker.cpp tracker.cpp)
-target_link_libraries(test_tracker ${OpenCV_LIBS})
+add_executable(test_tracker test_tracker.cpp )
+target_link_libraries(test_tracker ${OpenCV_LIBS} simple_od)
 
 
 # test object detection on rs200's data
 add_executable(test_rs200 test_rs200.cpp)
 target_link_libraries(test_rs200 glfw realsense GLU GL ${OpenCV_LIBS})
 
-
+add_executable(main_od main_od.cpp)
+target_link_libraries(main_od simple_od realsense)

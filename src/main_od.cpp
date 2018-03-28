@@ -6,14 +6,18 @@
 */
 
 #include <librealsense/rs.hpp>
+#include "global.h"
 #include <cstdio>
 #include <GLFW/glfw3.h>
 #include "opencv2/opencv.hpp"
 #include <sstream>
+#include <string>
 #include "detector.h"
 
 using namespace cv; 
 using namespace std; 
+
+string g_obj_dir = "../imgs/ob_template";
 
 void detectObj(rs::device* dev); 
 
@@ -41,15 +45,28 @@ void detectObj(rs::device* dev)
 {
 	char key = 1; 
 
-	// 
+	// get detector 
+	CMultiDector detector(g_obj_dir); 	
 
+	bool draw_result = false; 
 	while(key != 27)
 	{
 		dev->wait_for_frames(); 
 		cv::Mat raw_rgb(480, 640, CV_8UC3, dev->get_frame_data(rs::stream::color)); 
 		cv::Mat rgb; //  = raw_rgb.clone(); 
 		cv::cvtColor(raw_rgb, rgb, CV_BGR2RGB);
-		cv::imshow("rgb", rgb);
+		
+		vector<cv::Point2f> pts; 
+		bool suc = detector.detect(raw_rgb, pts, draw_result); 
+		if(suc)
+		{
+			cout <<"main_od: succeed to detect object "<<endl; 
+			cv::Mat labeled = drawPoint(rgb, pts); 
+			cv::imshow("tracked!", labeled); 
+		}else
+		{
+			cv::imshow("rgb", rgb);
+		}
 		key = cv::waitKey(30); 
 
 	}
