@@ -15,6 +15,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
 #include "opencv2/nonfree/nonfree.hpp"
+#include "opencv2/opencv.hpp"
 
 using namespace std; 
 
@@ -28,6 +29,8 @@ public:
 
     bool detect(cv::Mat img, vector<cv::Point2f>&, bool draw_result = false);
     bool detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& des_scene, vector<cv::Point2f>& , bool draw_result = false); 
+    
+    void match(cv::Mat& des_obj, cv::Mat& des_scene, vector<cv::DMatch>& matches); 
 
     void extractFeatures(const cv::Mat img, vector<cv::KeyPoint>& kpts, cv::Mat& des); 
     void rejectWithF(vector<cv::Point2f>& obj, vector<cv::Point2f>& scene, vector<uchar>& status);    
@@ -37,6 +40,10 @@ public:
     cv::Mat mObjDes;
     bool mbIntialized;
     int mMatchThresold; 
+
+    cv::FeatureDetector * mpDetector;  
+    cv::DescriptorExtractor * mpDescriptor; 
+
 };
 
 class CMultiDector

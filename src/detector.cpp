@@ -4,7 +4,6 @@
     simple detector, detect object by matching SURF features
 */
 
-#include "opencv2/opencv.hpp"
 #include "detector.h"
 #include <sstream>
 #include "global.h"
@@ -37,24 +36,41 @@ mMatchThresold(30)
     init(obj);     
 }
 
-CDetector::~CDetector(){}
+CDetector::~CDetector()
+{
+	delete mpDetector;
+	delete mpDescriptor; 
+}
 
 void CDetector::init(cv::Mat img)
 {
-    mObjImg = img.clone(); 
-    extractFeatures(mObjImg, mObjPts, mObjDes); 
-    mbIntialized = true; 
+	mObjImg = img.clone(); 
+	mbIntialized = true; 
+	// extract keypoints 
+	// mpDetector = new cv::SURF(600.); 
+	mpDetector = new cv::SIFT(); 
+
+	// extract descriptors
+	// mpDescriptor = new cv::SURF(600.); 
+	mpDescriptor = new cv::SIFT();      
+
+	extractFeatures(mObjImg, mObjPts, mObjDes); 
+  
 }
 
 void CDetector::extractFeatures(const cv::Mat img, vector<KeyPoint>& kpts, cv::Mat& des)
 {
-    int minHessian = 400; 
-    SurfFeatureDetector detector(minHessian, 3, 7); 
+    // SURF
+    // int minHessian = 400; 
+    // SurfFeatureDetector detector(minHessian, 3, 7); 
     
-    detector.detect(img, kpts); 
-    SurfDescriptorExtractor extractor; 
+    // detector.detect(img, kpts);  
+	mpDetector->detect(img, kpts);
+    // SurfDescriptorExtractor extractor; 
     
-    extractor.compute(img, kpts, des); 
+    // extractor.compute(img, kpts, des); 
+	mpDescriptor->compute(img, kpts, des); 	
+
     return ; 
 }
 
@@ -96,33 +112,118 @@ void CDetector::rejectWithF(vector<Point2f>& obj, vector<Point2f>& scene, vector
 	return ; 
 }
 
-bool CDetector::detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& des_scene, vector<Point2f>& out_pts, bool draw_result)
+void CDetector::match(cv::Mat& des_obj, cv::Mat& des_scene, vector<DMatch>& out_matches)
 {
 	// match them 
-	FlannBasedMatcher matcher; 
-	std::vector<DMatch> matches; 
-	matcher.match(mObjDes, des_scene, matches); 
+	// FlannBasedMatcher matcher; 
+	// std::vector<DMatch> matches; 
+	// matcher.match(des_f, des_t, matches); 
+	
+	int k = 2;
 
-	double max_dist = 0; double min_dist = 10000;
+	cv::Mat results;
+	cv::Mat dists;
 
-	//-- Quick calculation of max and min distances between keypoints
-	for( int i = 0; i < mObjDes.rows; i++ )
-	{ 
-		double dist = matches[i].distance;
-		if( dist < min_dist ) min_dist = dist;
-		if( dist > max_dist ) max_dist = dist;
+	vector<vector<DMatch>> matches; 
+	bool useBFMatcher = false; // SET TO TRUE TO USE BRUTE FORCE MATCHER
+	if(des_obj.type()==CV_8U)
+	{
+		// Binary descriptors detected (from ORB, Brief, BRISK, FREAK)
+		printf("Binary descriptors detected...\n");
+		if(useBFMatcher)
+		{
+			cv::BFMatcher matcher(cv::NORM_HAMMING); // use cv::NORM_HAMMING2 for ORB descriptor with WTA_K == 3 or 4 (see ORB constructor)
+			matcher.knnMatch(des_obj, des_scene, matches, k);
+		}
+		else
+		{
+			// Create Flann LSH index
+			cv::flann::Index flannIndex(des_scene, cv::flann::LshIndexParams(12, 20, 2), cvflann::FLANN_DIST_HAMMING);
+			// printf("Time creating FLANN LSH index = %d ms\n", time.restart());
+
+			// search (nearest neighbor)
+			flannIndex.knnSearch(des_obj, results, dists, k, cv::flann::SearchParams() );
+		}
+	}
+	else
+	{
+		// assume it is CV_32F
+		printf("Float descriptors detected...\n");
+		if(useBFMatcher)
+		{
+			cv::BFMatcher matcher(cv::NORM_L2);
+			matcher.knnMatch(des_obj, des_scene, matches, k);
+		}
+		else
+		{
+			// Create Flann KDTree index
+			cv::flann::Index flannIndex(des_scene, cv::flann::KDTreeIndexParams(), cvflann::FLANN_DIST_EUCLIDEAN);
+			// printf("Time creating FLANN KDTree index = %d ms\n", time.restart());
+
+			// search (nearest neighbor)
+			flannIndex.knnSearch(des_obj, results, dists, k, cv::flann::SearchParams() );
+		}
+	}
+	// printf("Time nearest neighbor search = %d ms\n", time.restart());
+
+	// Conversion to CV_32F if needed
+	if(dists.type() == CV_32S)
+	{
+		cv::Mat temp;
+		dists.convertTo(temp, CV_32F);
+		dists = temp;
 	}
 
-	//-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
-	std::vector< DMatch > good_matches;
+	// Find correspondences by NNDR (Nearest Neighbor Distance Ratio)
+	float nndrRatio = 0.8f;
+	std::vector<cv::Point2f> mpts_1, mpts_2; // Used for homography
+	std::vector<int> indexes_1, indexes_2; // Used for homography
+	std::vector<uchar> outlier_mask;  // Used for homography
+	// Check if this descriptor matches with those of the objects
+	if(!useBFMatcher)
+	{
+		for(int i=0; i<des_obj.rows; ++i)
+		{
+			// Apply NNDR
+			//printf("q=%d dist1=%f dist2=%f\n", i, dists.at<float>(i,0), dists.at<float>(i,1));
+			if(results.at<int>(i,0) >= 0 && results.at<int>(i,1) >= 0 &&
+					dists.at<float>(i,0) <= nndrRatio * dists.at<float>(i,1))
+			{
+				cv::DMatch m; 
+				m.queryIdx = i; 
+				m.trainIdx = results.at<int>(i, 0);
+				out_matches.push_back(m); 
+			}
+		}
+	}
+	else
+	{
+		for(unsigned int i=0; i<matches.size(); ++i)
+		{
+			// Apply NNDR
+			//printf("q=%d dist1=%f dist2=%f\n", matches.at(i).at(0).queryIdx, matches.at(i).at(0).distance, matches.at(i).at(1).distance);
+			if(matches.at(i).size() == 2 &&
+					matches.at(i).at(0).distance <= nndrRatio * matches.at(i).at(1).distance)
+			{
 
-	for( int i = 0; i < mObjDes.rows; i++ )
-	{ 
-		if( matches[i].distance < 7*min_dist )
-		{ good_matches.push_back( matches[i]); }
+				out_matches.push_back(matches[i][0]); 
+			}
+		}
 	}
 
-	// RANSAC + Homograpy 
+	
+
+	return ; 	
+}
+
+bool CDetector::detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& des_scene, vector<Point2f>& out_pts, bool draw_result)
+{
+	
+	// step 1 - feature match using descriptor  
+	vector<DMatch> good_matches; 
+	match(mObjDes, des_scene, good_matches); 
+
+	// step 2 - RANSAC + Homograpy 
 	vector<Point2f> obj; 
 	vector<Point2f> scene;
 	for(int i=0; i<good_matches.size(); i++)
@@ -131,7 +232,7 @@ bool CDetector::detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& de
 		scene.push_back(pts_scene[good_matches[i].trainIdx].pt);
 	}
 
-	// double h_threshold = 3.0 ; 
+	double h_threshold = 1.0 ; 
 	vector<uchar> status; 
 
 	// Mat H = findHomography( obj, scene, CV_RANSAC, h_threshold, status );
