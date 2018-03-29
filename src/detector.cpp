@@ -48,11 +48,23 @@ void CDetector::init(cv::Mat img)
 	mbIntialized = true; 
 	// extract keypoints 
 	// mpDetector = new cv::SURF(600.); 
-	mpDetector = new cv::SIFT(); 
+	// mpDetector = new cv::SIFT(); 
+	// mpDetector = new cv::FastFeatureDetector(); 
+	// mpDetector = new cv::DenseFeatureDetector(); 
+	// mpDetector = new cv::GFTTDetector(); 
+	// mpDetector = new cv::MSER(); 
+	mpDetector = new cv::ORB(); 
+	// mpDetector = new cv::StarFeatureDetector(); 
+	// mpDetector = new cv::BRISK(); 
 
 	// extract descriptors
 	// mpDescriptor = new cv::SURF(600.); 
-	mpDescriptor = new cv::SIFT();      
+	// mpDescriptor = new cv::SIFT();      
+	mpDescriptor = new cv::FREAK();      
+	// mpDescriptor = new cv::ORB();      
+	// mpDescriptor = new cv::BRISK();      
+
+	// mpDescriptor = new cv::BriefDescriptorExtractor();      
 
 	extractFeatures(mObjImg, mObjPts, mObjDes); 
   
@@ -70,6 +82,7 @@ void CDetector::extractFeatures(const cv::Mat img, vector<KeyPoint>& kpts, cv::M
     
     // extractor.compute(img, kpts, des); 
 	mpDescriptor->compute(img, kpts, des); 	
+	// cout <<"detector.cpp: kpts have "<<kpts.size()<<" des has "<<des.rows<<endl; 
 
     return ; 
 }
@@ -129,7 +142,7 @@ void CDetector::match(cv::Mat& des_obj, cv::Mat& des_scene, vector<DMatch>& out_
 	if(des_obj.type()==CV_8U)
 	{
 		// Binary descriptors detected (from ORB, Brief, BRISK, FREAK)
-		printf("Binary descriptors detected...\n");
+		// printf("Binary descriptors detected...\n");
 		if(useBFMatcher)
 		{
 			cv::BFMatcher matcher(cv::NORM_HAMMING); // use cv::NORM_HAMMING2 for ORB descriptor with WTA_K == 3 or 4 (see ORB constructor)
@@ -148,7 +161,7 @@ void CDetector::match(cv::Mat& des_obj, cv::Mat& des_scene, vector<DMatch>& out_
 	else
 	{
 		// assume it is CV_32F
-		printf("Float descriptors detected...\n");
+		// printf("Float descriptors detected...\n");
 		if(useBFMatcher)
 		{
 			cv::BFMatcher matcher(cv::NORM_L2);
@@ -220,6 +233,13 @@ bool CDetector::detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& de
 {
 	
 	// step 1 - feature match using descriptor  
+	const int min_kp_num = mMatchThresold; 
+	if(pts_scene.size() < mMatchThresold)
+	{
+		// cout <<"detector.cpp: extract "<<pts_scene.size()<<" feautes < "<<mMatchThresold<<endl;
+		return false; 
+	}
+
 	vector<DMatch> good_matches; 
 	match(mObjDes, des_scene, good_matches); 
 
@@ -237,7 +257,12 @@ bool CDetector::detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& de
 
 	// Mat H = findHomography( obj, scene, CV_RANSAC, h_threshold, status );
 
-	rejectWithF(obj, scene, status);
+	if(scene.size() >= mMatchThresold)
+		rejectWithF(obj, scene, status);
+	else{
+		cout<<"detector.cpp: matched features "<<scene.size()<<" less than threshold "<<mMatchThresold<<endl;
+		return false;
+	}
 	// double F_THRESHOLD = 1.0; 
 	// findFundamentalMat(obj, scene, FM_RANSAC, F_THRESHOLD, 0.99, status); 
 	// reduceVector<Point2f>(scene, status);
@@ -255,11 +280,11 @@ bool CDetector::detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& de
 	bool ret_status = false; 
 	if(out_pts.size() >= mMatchThresold)
 	{
-		cout <<"detector.cpp: RANSAC result scene points: "<<scene.size()<<endl; 
+		cout <<"detector.cpp: RANSAC result scene points: "<<scene.size()<<" from "<<status.size()<<endl; 
 		ret_status = true;
 	}else
 	{
-		cout <<"detector.cpp: failed due to small matched scene points: "<<scene.size()<<endl;
+		cout <<"detector.cpp: after rejectF small matched scene points: "<<scene.size()<<endl;
 	}
 
 	if(draw_result)
@@ -354,14 +379,14 @@ void CMultiDector::init(string dir)
 			cv::Mat gray;			
 		        cvtColor(img, gray, cv::COLOR_RGB2GRAY);
 			// histogram filter 
-			cv::Mat filtered_gray; 
-			cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
-			clahe->apply(gray, filtered_gray); 
+			cv::Mat filtered_gray = gray; 
+			// cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
+			// clahe->apply(gray, filtered_gray); 
 			
 			// create detector 
 			CDetector* pDec = new CDetector(filtered_gray); 
 			mvDector.push_back(pDec); 
-			
+			cout <<"detector.cpp: new detector has "<<pDec->mObjPts.size()<<" pts!"<<endl;
 			// show the image for debug 
 			// cv::Mat show_img = drawPoint(img, pDec->mObjPts); 
 			// imshow("new detector", show_img); 
@@ -389,14 +414,13 @@ bool CMultiDector::detect(cv::Mat img, vector<cv::Point2f>& pts, bool draw_resul
 		gray = img.clone(); 
 	}
 
-	cv::Mat filtered_gray; 
-	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
-	clahe->apply(gray, filtered_gray); 
+	cv::Mat filtered_gray = gray; 
+	// cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
+	// clahe->apply(gray, filtered_gray); 
 	// extract features 
 	vector<KeyPoint> kpt_scene; 
 	Mat des_scene; 
-	((CDetector*)0)->extractFeatures(filtered_gray, kpt_scene, des_scene); 	
-	
+	mvDector[0]->extractFeatures(filtered_gray, kpt_scene, des_scene); 	
 	bool ret = false; 
 	for(int i=0; i<mvDector.size(); i++)
 	{

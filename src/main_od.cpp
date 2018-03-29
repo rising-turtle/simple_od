@@ -13,6 +13,7 @@
 #include <sstream>
 #include <string>
 #include "detector.h"
+#include "tracker.h"
 
 using namespace cv; 
 using namespace std; 
@@ -48,24 +49,43 @@ void detectObj(rs::device* dev)
 	// get detector 
 	CMultiDector detector(g_obj_dir); 	
 
+	CTracker tracker; 
 	bool draw_result = false; 
+	bool detected = false; 
 	while(key != 27)
 	{
 		dev->wait_for_frames(); 
 		cv::Mat raw_rgb(480, 640, CV_8UC3, dev->get_frame_data(rs::stream::color)); 
+		vector<cv::Point2f> pts; 
 		cv::Mat rgb; //  = raw_rgb.clone(); 
 		cv::cvtColor(raw_rgb, rgb, CV_BGR2RGB);
-		
-		vector<cv::Point2f> pts; 
-		bool suc = detector.detect(raw_rgb, pts, draw_result); 
-		if(suc)
+
+		if(!detected)
 		{
-			cout <<"main_od: succeed to detect object "<<endl; 
-			cv::Mat labeled = drawPoint(rgb, pts); 
-			cv::imshow("tracked!", labeled); 
+			detected = detector.detect(raw_rgb, pts, draw_result); 
+			if(detected)
+			{
+				cv::Mat gray;
+				cv::cvtColor(raw_rgb, gray, CV_BGR2GRAY); 		
+
+				cout <<"main_od: succeed to detect object "<<endl; 
+				cv::Mat labeled = drawPoint(rgb, pts); 
+				cv::imshow("tracked!", labeled); 
+				
+				tracker.init(gray, pts); 
+			}else
+			{
+				cv::imshow("rgb", rgb);
+			}
 		}else
 		{
-			cv::imshow("rgb", rgb);
+			cv::Mat gray;
+			cv::cvtColor(raw_rgb, gray, CV_BGR2GRAY); 		
+
+			// track it 
+			tracker.track(gray); 
+			cv::Mat draw_frame = drawMatch(gray, tracker.mPrePts, tracker.mCurPts);
+			cv::imshow("tracker", draw_frame);
 		}
 		key = cv::waitKey(30); 
 
