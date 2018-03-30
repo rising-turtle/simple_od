@@ -16,7 +16,7 @@ find_package(fast REQUIRED
 include_directories(${fast_INCLUDE_DIR})
 
 ## compile into a library 
-add_library(simple_od global.cpp detector.cpp tracker.cpp)
+add_library(simple_od global.cpp detector.cpp tracker.cpp detector_color.cpp)
 target_link_libraries(simple_od ${OpenCV_LIBS})
 
 
@@ -40,3 +40,5 @@ target_link_libraries(main_od simple_od realsense)
 add_executable(test_fast test_fast.cpp)
 target_link_libraries(test_fast realsense ${fast_LIBRARY} simple_od)
 
+add_executable(main_od_color main_od_color.cpp)
+target_link_libraries(main_od_color realsense simple_od)
