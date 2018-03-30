@@ -30,7 +30,7 @@ target_link_libraries(test_detector ${OpenCV_LIBS} simple_od)
 add_executable(test_tracker test_tracker.cpp )
 target_link_libraries(test_tracker ${OpenCV_LIBS} simple_od)
 
-# test object detection on rs200's data
+## test object detection on rs200's data
 add_executable(test_rs200 test_rs200.cpp)
 target_link_libraries(test_rs200 glfw realsense GLU GL ${OpenCV_LIBS})
 
@@ -42,3 +42,7 @@ target_link_libraries(test_fast realsense ${fast_LIBRARY} simple_od)
 
 add_executable(main_od_color main_od_color.cpp)
 target_link_libraries(main_od_color realsense simple_od)
+
+## some other test 
+add_executable(test_hsv test_hsv_value.cpp)
+target_link_libraries(test_hsv ${OpenCV_LIBS})

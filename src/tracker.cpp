@@ -39,6 +39,13 @@ void CTracker::init(cv::Mat img, vector<Point2f>& pts)
     mbInitialized = true; 
 }
 
+void CTracker::uninit()
+{
+	mbInitialized = false; 
+	mPrePts.clear(); 
+	mCurPts.clear(); 
+}
+
 bool CTracker::track(cv::Mat img, bool draw_result)
 {
     if(mbInitialized == false)
@@ -57,6 +64,10 @@ bool CTracker::track(cv::Mat img, bool draw_result)
     reduceVector<Point2f>(mPrePts, status); 
     reduceVector<Point2f>(mCurPts, status); 
     // mPrePts = mCurPts; 
-    // mPreImg = mCurImg; 
+    // mPreImg = mCurImg;
+    if(mCurPts.size() < 20)
+    {
+	return false; 		
+    } 
     return true; 
 }

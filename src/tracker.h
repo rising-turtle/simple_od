@@ -26,7 +26,7 @@ public:
     // addFeature();
     
     void init(cv::Mat img, vector<cv::Point2f>& pts);
-
+    void uninit(); 
     //
     bool track(cv::Mat img, bool draw_result = false); 
 
