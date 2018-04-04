@@ -52,4 +52,5 @@ target_link_libraries(main_od_color realsense simple_od)
 add_executable(test_hsv test_hsv_value.cpp)
 target_link_libraries(test_hsv ${OpenCV_LIBS})
 
-
+add_executable(main_video main_video.cpp)
+target_link_libraries(main_video ${OpenCV_LIBS})
