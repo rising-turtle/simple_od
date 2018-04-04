@@ -30,8 +30,8 @@ void push_folder_into_video()
   
   VideoWriter* mpVideo = new cv::VideoWriter; 
   Size sz(640, 480);
-  // mpVideo->open("video.avi", CV_FOURCC('X','V','I','0'), 30, sz, true); 
-  mpVideo->open("out_video.avi", -1, 30, sz, true); 
+  mpVideo->open("video.avi", CV_FOURCC('X','V','I','0'), 30, sz, true); 
+  // mpVideo->open("out_video.avi", -1, 30, sz, true); 
 
   if(!mpVideo->isOpened())
   {
