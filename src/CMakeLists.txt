@@ -19,13 +19,15 @@ link_directories(/usr/local/lib /home/hannah/work/librealsense/build)
 add_library(simple_od global.cpp detector.cpp tracker.cpp detector_color.cpp)
 target_link_libraries(simple_od ${OpenCV_LIBS})
 
-
 # add_executable(match_example match_example.cpp)
 # target_link_libraries(match_example ${OpenCV_LIBS})
 
 ## compile controller 
 add_subdirectory(control)
 
+#### Main function use glove to assist tracking 
+add_executable(main_glove main_glove_track.cpp glove_control.cpp)
+target_link_libraries(main_glove ${OpenCV_LIBS} simple_od realsense motor )
 
 add_executable(test_detector test_detector.cpp )
 target_link_libraries(test_detector ${OpenCV_LIBS} simple_od)
@@ -49,3 +51,5 @@ target_link_libraries(main_od_color realsense simple_od)
 ## some other test 
 add_executable(test_hsv test_hsv_value.cpp)
 target_link_libraries(test_hsv ${OpenCV_LIBS})
+
+

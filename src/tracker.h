@@ -31,6 +31,10 @@ public:
     bool track(cv::Mat img, bool draw_result = false); 
 
     bool mbInitialized; 
+
+    // middle point of tracked object 
+    cv::Point2f meanPoint(); 
+
     cv::Mat mPreImg;
     cv::Mat mCurImg; 
     vector<cv::Point2f> mPrePts;

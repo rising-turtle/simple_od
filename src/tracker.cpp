@@ -71,3 +71,25 @@ bool CTracker::track(cv::Mat img, bool draw_result)
     } 
     return true; 
 }
+
+cv::Point2f CTracker::meanPoint()
+{
+  Point2f mpt; 
+  mpt.x = -1.; 
+  mpt.y = -1; 
+
+  double px = 0; 
+  double py = 0; 
+  for(int i=0; i<mCurPts.size(); i++)
+  {
+    px += mCurPts[i].x; 
+    py += mCurPts[i].y; 
+  }
+  if(mCurPts.size() > 0)
+  {
+    mpt.x = px / mCurPts.size(); 
+    mpt.y = py / mCurPts.size(); 
+  }
+  return mpt; 
+}
+

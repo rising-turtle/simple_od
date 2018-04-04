@@ -29,13 +29,13 @@ bool CDetectorColor::detect(Mat img, Mat& out_mask)
 
 	// 4. define color range 
 	Mat mask1; // hue for red 
-	Scalar min_red = Scalar(0, 100, 120); //(0, 100 , 80)
-	Scalar max_red = Scalar(5, 256, 256); // (10, 256, 256); // 10 
+	Scalar min_red = Scalar(0, 100, 80); //(0, 100 , 120/80)
+	Scalar max_red = Scalar(10, 256, 256); //  (5/10, 256, 256); // 10 
 	cv::inRange(hsv_blur, min_red, max_red, mask1);
 	// cv::imshow("mask1", mask1); 	
 
 	Mat mask2; // brightness  
-	Scalar min_red2 = Scalar(170, 100, 120);  // (170, 100, 80); 
+	Scalar min_red2 = Scalar(170, 100, 120);  // (170, 100, 120/80); 
 	Scalar max_red2 = Scalar(175, 256, 256); // (175, 256, 256); // 180
 	cv::inRange(hsv_blur, min_red2, max_red2, mask2); 
 	// cv::imshow("mask2", mask2); 
@@ -68,7 +68,7 @@ bool CDetectorColor::detect(Mat img, Mat& out_mask)
 	
 	// 7. overlay
 	cv::Mat overlay = overlay_mask(mask_object, rgb); 
-	// cv::imshow("overlay", overlay); 
+        // cv::imshow("overlay", overlay); 
 
 	// 8. circle the biggest object 
 	cv::Mat circled = circle_contour(overlay, big_object_contour); 
