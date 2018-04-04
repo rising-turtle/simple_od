@@ -9,6 +9,7 @@
 #include <cstdio>
 #include "opencv2/opencv.hpp"
 #include <sstream>
+#include <string>
 #include "tracker.h"
 #include "detector_color.h"
 #include "glove_control.h"
@@ -56,6 +57,8 @@ int detectObjRS()
         // show glove 
         CGloveControl glove; 
         cout <<"main_glove_track.cpp: start capture stream!"<<endl; 
+        
+        int image_cnt = 1;
 
 	while(key != 27)
 	{
@@ -73,8 +76,8 @@ int detectObjRS()
 				cvtColor(raw_img, gray, CV_BGR2GRAY);
 				// extract and show feature
 				// pts.clear(); 
-				cv::goodFeaturesToTrack(gray, pts, 10000, 0.1, 5, mask); 
-				if(pts.size() > 40)
+				cv::goodFeaturesToTrack(gray, pts, 10000, 0.05, 5, mask); // 0.1
+				if(pts.size() > 5)
 				{
 					show_img = drawPoint(raw_img, pts);
 					tracker.init(gray, pts); 
@@ -114,6 +117,9 @@ int detectObjRS()
 			}
 		}
 		cv::imshow("show_img", show_img);
+                stringstream ss;
+                ss<<"./video/image_"<<image_cnt++<<".png"; 
+                cv::imwrite(ss.str().c_str(), show_img); 
 		key = cv::waitKey(30); 
 	}
 	return 1; 

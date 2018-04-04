@@ -65,7 +65,7 @@ bool CTracker::track(cv::Mat img, bool draw_result)
     reduceVector<Point2f>(mCurPts, status); 
     // mPrePts = mCurPts; 
     // mPreImg = mCurImg;
-    if(mCurPts.size() < 20)
+    if(mCurPts.size() < 5)
     {
 	return false; 		
     } 

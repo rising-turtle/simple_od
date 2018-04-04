@@ -21,13 +21,15 @@ int detectObjImg(int argc, char* argv[]);
 
 int main(int argc, char* argv[])
 {
-	int ret = detectObjRS(); 
-	// int ret = detectObjImg(argc, argv); 
-	// cv::Mat tmp = Mat::zeros(500, 500, CV_8UC3); 
-	// cv::rectangle(tmp, Point(0, 100), Point(300, 300), Scalar(2, 255, 255), -1, 8);
-	// imshow("tmp", tmp);
-	// waitKey(0);
-	return 1; // ret; 
+  if(argc <= 1)
+    detectObjRS();
+  else
+    detectObjImg(argc, argv); 
+  // cv::Mat tmp = Mat::zeros(500, 500, CV_8UC3); 
+  // cv::rectangle(tmp, Point(0, 100), Point(300, 300), Scalar(2, 255, 255), -1, 8);
+  // imshow("tmp", tmp);
+  // waitKey(0);
+  return 1; // ret; 
 }
 
 int detectObjImg(int argc, char* argv[])
@@ -48,9 +50,9 @@ int detectObjImg(int argc, char* argv[])
 			cvtColor(raw_img, gray, CV_BGR2GRAY);
 			vector<Point2f> pts;  
 			// extract and show feature
-			cv::goodFeaturesToTrack(gray, pts, 10000, 0.1, 5, mask); 
+			cv::goodFeaturesToTrack(gray, pts, 10000, 0.1, 5, mask); //0.1
 			cv::Mat tmp = drawPoint(raw_img, pts);
-			cout <<"main_od_color.cpp: succeed to detect object!"<<endl; 
+			cout <<"main_od_color.cpp: succeed to detect object, track good feature "<<pts.size()<<endl; 
 			imshow("detected ", tmp); 
 		}else
 		{
@@ -102,8 +104,8 @@ int detectObjRS()
 				cvtColor(raw_img, gray, CV_BGR2GRAY);
 				// extract and show feature
 				// pts.clear(); 
-				cv::goodFeaturesToTrack(gray, pts, 10000, 0.1, 5, mask); 
-				if(pts.size() > 40)
+				cv::goodFeaturesToTrack(gray, pts, 10000, 0.05, 5, mask);  // 0.1
+				if(pts.size() > 10)
 				{
 					show_img = drawPoint(raw_img, pts);
 					tracker.init(gray, pts); 

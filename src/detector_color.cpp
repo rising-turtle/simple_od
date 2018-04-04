@@ -30,13 +30,13 @@ bool CDetectorColor::detect(Mat img, Mat& out_mask)
 	// 4. define color range 
 	Mat mask1; // hue for red 
 	Scalar min_red = Scalar(0, 100, 80); //(0, 100 , 120/80)
-	Scalar max_red = Scalar(10, 256, 256); //  (5/10, 256, 256); // 10 
+	Scalar max_red = Scalar(20, 256, 256); //  (5/10, 256, 256); // 10 
 	cv::inRange(hsv_blur, min_red, max_red, mask1);
 	// cv::imshow("mask1", mask1); 	
 
 	Mat mask2; // brightness  
-	Scalar min_red2 = Scalar(170, 100, 120);  // (170, 100, 120/80); 
-	Scalar max_red2 = Scalar(175, 256, 256); // (175, 256, 256); // 180
+	Scalar min_red2 = Scalar(150, 100, 120);  // (170, 100, 120/80); 
+	Scalar max_red2 = Scalar(180, 256, 256); // (175, 256, 256); // 180
 	cv::inRange(hsv_blur, min_red2, max_red2, mask2); 
 	// cv::imshow("mask2", mask2); 
 
@@ -76,7 +76,7 @@ bool CDetectorColor::detect(Mat img, Mat& out_mask)
 	out_mask = circled; 
 	// cvtColor(circled, circled, CV_RGB2BGR); 
 
-	// imshow("circled", circled); 
+	imshow("circled", circled); 
 	// waitKey(0);  
 	return true; 
 }
@@ -95,7 +95,7 @@ CDetectorColor::find_biggest_contour(cv::Mat mask_clean)
 	for(int i=0; i<contours.size(); i++)
 	{
 		double area = contourArea(contours[i]); 
-		// cout <<"contour "<<i+1<<"'s area is "<<area<<endl;
+		cout <<"contour "<<i<<"'s area is "<<area<<endl;
 		if(area > max_area)
 		{
 			biggest_index = i; 
@@ -107,14 +107,17 @@ CDetectorColor::find_biggest_contour(cv::Mat mask_clean)
 	cv::Mat mask = Mat::zeros(tmp.size(), CV_8UC1); 
 	Scalar color(255); 
 	bool found_it = false; 
-	double area_threshold = 10000;
+	double area_threshold = 200;
 	vector<Point> biggest_contour; 
-	if(biggest_index != -1 && max_area > 0 && max_area > 10000)
+	if(biggest_index != -1 && max_area > 0 && max_area > area_threshold)
 	{
 		found_it = true; 
 		drawContours(mask, contours, biggest_index, color, CV_FILLED, 8, hierarchy, 0, Point()); 
 		biggest_contour = contours[biggest_index]; 
-	}
+          cout<<"detetor_color: max_area = "<<max_area<<" choose biggest_index: "<<biggest_index<<endl;
+	}else{
+          cout <<"detector_color: max_area = "<<max_area<<" area_threshold = "<<area_threshold<<endl;
+        }
 	// return std::make_tuple(contours[biggest_index], mask);
 	return std::make_tuple(biggest_contour, mask, found_it); 
 }
