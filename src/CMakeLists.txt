@@ -1,5 +1,7 @@
 project(simple_od)
 
+set(HAS_RS FALSE)
+
 find_package(OpenCV REQUIRED)
 find_package(glfw3 REQUIRED)
 
@@ -15,6 +17,7 @@ link_directories(/usr/local/lib /home/hannah/work/librealsense/build)
 #	PATH /home/hannah/work/github/fast/build)
 # include_directories(${fast_INCLUDE_DIR})
 
+
 ## compile into a library 
 add_library(simple_od global.cpp detector.cpp tracker.cpp detector_color.cpp)
 target_link_libraries(simple_od ${OpenCV_LIBS})
@@ -22,18 +25,15 @@ target_link_libraries(simple_od ${OpenCV_LIBS})
 # add_executable(match_example match_example.cpp)
 # target_link_libraries(match_example ${OpenCV_LIBS})
 
+
+if(HAS_RS)
+
 ## compile controller 
 add_subdirectory(control)
 
 #### Main function use glove to assist tracking 
 add_executable(main_glove main_glove_track.cpp glove_control.cpp)
 target_link_libraries(main_glove ${OpenCV_LIBS} simple_od realsense motor )
-
-add_executable(test_detector test_detector.cpp )
-target_link_libraries(test_detector ${OpenCV_LIBS} simple_od)
-
-add_executable(test_tracker test_tracker.cpp )
-target_link_libraries(test_tracker ${OpenCV_LIBS} simple_od)
 
 ## test object detection on rs200's data
 add_executable(test_rs200 test_rs200.cpp)
@@ -47,6 +47,15 @@ target_link_libraries(main_od simple_od realsense)
 
 add_executable(main_od_color main_od_color.cpp)
 target_link_libraries(main_od_color realsense simple_od)
+
+endif(HAS_RS)
+
+
+add_executable(test_detector test_detector.cpp )
+target_link_libraries(test_detector ${OpenCV_LIBS} simple_od)
+
+add_executable(test_tracker test_tracker.cpp )
+target_link_libraries(test_tracker ${OpenCV_LIBS} simple_od)
 
 ## some other test 
 add_executable(test_hsv test_hsv_value.cpp)

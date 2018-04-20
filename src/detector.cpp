@@ -48,19 +48,19 @@ void CDetector::init(cv::Mat img)
 	mbIntialized = true; 
 	// extract keypoints 
 	// mpDetector = new cv::SURF(600.); 
-	// mpDetector = new cv::SIFT(); 
+	mpDetector = new cv::SIFT(); 
 	// mpDetector = new cv::FastFeatureDetector(); 
 	// mpDetector = new cv::DenseFeatureDetector(); 
 	// mpDetector = new cv::GFTTDetector(); 
 	// mpDetector = new cv::MSER(); 
-	mpDetector = new cv::ORB(); 
+	// mpDetector = new cv::ORB(); 
 	// mpDetector = new cv::StarFeatureDetector(); 
 	// mpDetector = new cv::BRISK(); 
 
 	// extract descriptors
 	// mpDescriptor = new cv::SURF(600.); 
-	// mpDescriptor = new cv::SIFT();      
-	mpDescriptor = new cv::FREAK();      
+	mpDescriptor = new cv::SIFT();      
+	// mpDescriptor = new cv::FREAK();      
 	// mpDescriptor = new cv::ORB();      
 	// mpDescriptor = new cv::BRISK();      
 
@@ -188,7 +188,7 @@ void CDetector::match(cv::Mat& des_obj, cv::Mat& des_scene, vector<DMatch>& out_
 	}
 
 	// Find correspondences by NNDR (Nearest Neighbor Distance Ratio)
-	float nndrRatio = 0.8f;
+	float nndrRatio = 0.5f;
 	std::vector<cv::Point2f> mpts_1, mpts_2; // Used for homography
 	std::vector<int> indexes_1, indexes_2; // Used for homography
 	std::vector<uchar> outlier_mask;  // Used for homography
