@@ -72,3 +72,29 @@ Mat drawMatch(cv::Mat img, vector<cv::Point2f>& fpts, vector<cv::Point2f>& tpts)
     }
     return src_copy; 
 }
+
+cv::Mat drawMatch(cv::Mat img1, cv::Mat img2, std::vector<cv::Point2f>& fpts, 
+			std::vector<cv::Point2f>& tpts, cv::Scalar c)
+{
+    // TODO: debug this function 
+    int row = img1.rows > img2.rows ? img1.rows :  img2.rows; 
+    int col = img1.cols + img2.cols; 
+    Mat ret(row, col, CV_8UC1); 
+    // img1.copyTo(ret.colRange(0, img1.cols)); 
+    // img2.copyTo(ret.colRange(img1.cols, img1.cols + img2.cols)); 
+    ret(Range(1, img1.rows), Range(1, img1.cols)) = img1.clone();
+    ret(Range(1, img2.rows), Range(img1.cols+1, img1.cols + img2.cols)) = img2.clone(); 
+
+    Mat rgb_ret; 
+    cvtColor(ret, rgb_ret, CV_GRAY2RGB); 
+
+    for(int i=0; i<fpts.size(); i++)
+    {
+	circle(rgb_ret, fpts[i], 1, c, 2, 8, 0); 
+	circle(rgb_ret, tpts[i] + Point2f(img1.cols, 0), 1, c, 2, 8, 0); 
+	line(rgb_ret, fpts[i], tpts[i] + Point2f(img1.cols, 0), c); 
+    }
+    return rgb_ret; 
+}
+
+

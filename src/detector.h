@@ -30,7 +30,7 @@ public:
     bool detect(cv::Mat img, vector<cv::Point2f>&, bool draw_result = false);
     bool detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& des_scene, vector<cv::Point2f>& , bool draw_result = false); 
     
-    void match(cv::Mat& des_obj, cv::Mat& des_scene, vector<cv::DMatch>& matches); 
+    void match(cv::Mat& des_obj, cv::Mat& des_scene, vector<cv::DMatch>& matches, vector<cv::DMatch>* all_matches = NULL); 
 
     void extractFeatures(const cv::Mat img, vector<cv::KeyPoint>& kpts, cv::Mat& des); 
     void rejectWithF(vector<cv::Point2f>& obj, vector<cv::Point2f>& scene, vector<uchar>& status);    
@@ -43,6 +43,7 @@ public:
 
     cv::FeatureDetector * mpDetector;  
     cv::DescriptorExtractor * mpDescriptor; 
+
 
 };
 

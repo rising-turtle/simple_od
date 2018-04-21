@@ -125,7 +125,7 @@ void CDetector::rejectWithF(vector<Point2f>& obj, vector<Point2f>& scene, vector
 	return ; 
 }
 
-void CDetector::match(cv::Mat& des_obj, cv::Mat& des_scene, vector<DMatch>& out_matches)
+void CDetector::match(cv::Mat& des_obj, cv::Mat& des_scene, vector<DMatch>& out_matches, vector<DMatch>* all_matches)
 {
 	// match them 
 	// FlannBasedMatcher matcher; 
@@ -207,6 +207,13 @@ void CDetector::match(cv::Mat& des_obj, cv::Mat& des_scene, vector<DMatch>& out_
 				m.trainIdx = results.at<int>(i, 0);
 				out_matches.push_back(m); 
 			}
+			if(all_matches != NULL)
+			{
+				cv::DMatch m; 
+				m.queryIdx = i; 
+				m.trainIdx = results.at<int>(i, 0);
+				all_matches->push_back(m); 
+			}
 		}
 	}
 	else
@@ -221,11 +228,12 @@ void CDetector::match(cv::Mat& des_obj, cv::Mat& des_scene, vector<DMatch>& out_
 
 				out_matches.push_back(matches[i][0]); 
 			}
+			if(all_matches != NULL)
+			{
+			    all_matches->push_back(matches[i][0]);     
+			}
 		}
 	}
-
-	
-
 	return ; 	
 }
 
@@ -241,7 +249,30 @@ bool CDetector::detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& de
 	}
 
 	vector<DMatch> good_matches; 
-	match(mObjDes, des_scene, good_matches); 
+	vector<DMatch> all_matches;
+	match(mObjDes, des_scene, good_matches, &all_matches);
+
+	// display all_matches and potential_matches
+	Scalar red(0, 0, 255); 
+	Scalar green(0, 255, 0); 
+	Scalar blue(255, 0, 0); 
+	if(draw_result)
+	{
+	    Mat img_matches; 
+	    drawMatches(mObjImg, mObjPts, img, pts_scene, 
+		    all_matches, img_matches, red, red,
+		    vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+	    for(int i=0; i<good_matches.size(); i++) // draw the good matches 
+	    {
+		Point2f fpts = mObjPts[good_matches[i].queryIdx].pt; 
+		Point2f tpts = pts_scene[good_matches[i].trainIdx].pt; 
+		circle(img_matches, fpts, 1, blue, 2, 8, 0); 
+		circle(img_matches, tpts + Point2f(mObjImg.cols, 0), 1, blue, 2, 8, 0); 
+		line(img_matches, fpts , tpts + Point2f(mObjImg.cols, 0), blue); 
+	    }
+	    cv::imshow("NNDR", img_matches); 
+	    waitKey(0); 
+	}
 
 	// step 2 - RANSAC + Homograpy 
 	vector<Point2f> obj; 
@@ -254,6 +285,11 @@ bool CDetector::detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& de
 
 	double h_threshold = 1.0 ; 
 	vector<uchar> status; 
+
+	// Scalar red(0, 0, 255); 
+	// Mat showimg = drawMatch(mObjImg, img, obj, scene, red); 
+	// imshow("do it ", showimg); 
+	// waitKey(0); 
 
 	// Mat H = findHomography( obj, scene, CV_RANSAC, h_threshold, status );
 
@@ -289,13 +325,38 @@ bool CDetector::detect(cv::Mat img, vector<cv::KeyPoint>& pts_scene, cv::Mat& de
 
 	if(draw_result)
 	{
+	    Mat img_matches; 
+	    drawMatches(mObjImg, mObjPts, img, pts_scene, 
+		    good_matches, img_matches, blue, blue,
+		    vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+	    vector<DMatch> tmp_matches = good_matches; 
+	    reduceVector<DMatch>(tmp_matches, status); 
+
+	    for(int i=0; i<tmp_matches.size(); i++) // draw the good matches 
+	    {
+		Point2f fpts = mObjPts[tmp_matches[i].queryIdx].pt; 
+		Point2f tpts = pts_scene[tmp_matches[i].trainIdx].pt; 
+		circle(img_matches, fpts, 1, green, 2, 8, 0); 
+		circle(img_matches, tpts + Point2f(mObjImg.cols, 0), 1, green, 2, 8, 0); 
+		line(img_matches, fpts , tpts + Point2f(mObjImg.cols, 0), green); 
+	    }
+	    cv::imshow("F-RANSAC", img_matches); 
+	    waitKey(0); 
+	}
+
+	if(draw_result)
+	{
 		reduceVector<Point2f>(obj, status);
 		reduceVector<DMatch>(good_matches, status); 
 
 		Mat img_matches; 
+		// drawMatches(mObjImg, mObjPts, img, pts_scene, 
+		//		good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
+		//		vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 		drawMatches(mObjImg, mObjPts, img, pts_scene, 
-				good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
+				good_matches, img_matches, green, green,
 				vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
 		//-- Get the corners from the image_1 ( the object to be "detected" )
 		std::vector<Point2f> obj_corners(4);
 		obj_corners[0] = cvPoint(0,0); obj_corners[1] = cvPoint( mObjImg.cols, 0 );
