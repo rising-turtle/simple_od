@@ -58,7 +58,8 @@ bool Controller::rotateL(double angle)
   if(!succeed)
   {
     cout <<"control.cpp rotate about "<<angle<<" degree maybe stuck!"<<endl; 
-    usleep(100*1000); // sleep 100 ms
+    // usleep(100*1000); // sleep 100 ms
+    usleep(5*1000); // sleep 5 ms 
     return false; 
   }
 

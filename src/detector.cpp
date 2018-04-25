@@ -48,20 +48,20 @@ void CDetector::init(cv::Mat img)
 	mbIntialized = true; 
 	// extract keypoints 
 	// mpDetector = new cv::SURF(600.); 
-	mpDetector = new cv::SIFT(); 
+	// mpDetector = new cv::SIFT(); 
 	// mpDetector = new cv::FastFeatureDetector(); 
 	// mpDetector = new cv::DenseFeatureDetector(); 
 	// mpDetector = new cv::GFTTDetector(); 
 	// mpDetector = new cv::MSER(); 
-	// mpDetector = new cv::ORB(); 
+	mpDetector = new cv::ORB(); 
 	// mpDetector = new cv::StarFeatureDetector(); 
 	// mpDetector = new cv::BRISK(); 
 
 	// extract descriptors
 	// mpDescriptor = new cv::SURF(600.); 
-	mpDescriptor = new cv::SIFT();      
+	// mpDescriptor = new cv::SIFT();      
 	// mpDescriptor = new cv::FREAK();      
-	// mpDescriptor = new cv::ORB();      
+	mpDescriptor = new cv::ORB();      
 	// mpDescriptor = new cv::BRISK();      
 
 	// mpDescriptor = new cv::BriefDescriptorExtractor();      

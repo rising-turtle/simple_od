@@ -1,6 +1,6 @@
 project(simple_od)
 
-set(HAS_RS FALSE)
+set(HAS_RS TRUE) #FALSE
 
 find_package(OpenCV REQUIRED)
 find_package(glfw3 REQUIRED)

@@ -33,7 +33,7 @@ void CGloveControl::uninit()
 void CGloveControl::moveLeft(double r)
 {
   double n = r * 180.; 
-  mpMotorLR->rotateL(n); 
+  mpMotorLR->rotateL(-n); 
   return ; 
 }
 
