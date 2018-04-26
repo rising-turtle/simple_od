@@ -35,8 +35,8 @@ bool CDetectorColor::detect(Mat img, Mat& out_mask)
 	// cv::imshow("mask1", mask1); 	
 
 	Mat mask2; // brightness  
-	Scalar min_red2 = Scalar(150, 100, 120);  // (170, 100, 120/80); 
-	Scalar max_red2 = Scalar(180, 256, 256); // (175, 256, 256); // 180
+	Scalar min_red2 = Scalar(170, 100, 120);  // (170, 100, 120/80); 
+	Scalar max_red2 = Scalar(175, 256, 256); // (175, 256, 256); // 180
 	cv::inRange(hsv_blur, min_red2, max_red2, mask2); 
 	// cv::imshow("mask2", mask2); 
 

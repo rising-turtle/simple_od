@@ -38,7 +38,11 @@ void Controller::init()
 
 void Controller::uninit()
 {
-  if(mpMotor) {delete mpMotor; mpMotor = 0;}
+  if(mpMotor) 
+  {
+    mpMotor->writeHome(); 
+    delete mpMotor; mpMotor = 0;
+  }
  // if(mpClutch) {delete mpClutch; mpClutch = 0;}
   mbOK = false; 
   return ; 

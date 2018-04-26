@@ -6,6 +6,9 @@
  * */
 
 #include "glove_control.h"
+#include <iostream>
+
+using namespace std; 
 
 CGloveControl::CGloveControl()
 {
@@ -25,7 +28,12 @@ void CGloveControl::init()
 
 void CGloveControl::uninit()
 {
-  if(mpMotorLR == NULL) delete mpMotorLR;
+  if(mpMotorLR != NULL) 
+  {
+    cout <<"glove_control.cpp: in uninit()!"<<endl; 
+    mpMotorLR->uninit(); 
+    delete mpMotorLR;
+  }
   // if(mpMotorFB == NULL) delete mpMotorFB; 
 }
 
@@ -33,7 +41,7 @@ void CGloveControl::uninit()
 void CGloveControl::moveLeft(double r)
 {
   double n = r * 180.; 
-  mpMotorLR->rotateL(-n); 
+  mpMotorLR->rotateL(n); 
   return ; 
 }
 
