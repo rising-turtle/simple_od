@@ -1,6 +1,6 @@
 project(simple_od)
 
-set(HAS_RS TRUE) #FALSE
+set(HAS_RS FALSE) #FALSE
 
 find_package(OpenCV REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -22,8 +22,8 @@ link_directories(/usr/local/lib /home/hannah/work/librealsense/build)
 add_library(simple_od global.cpp detector.cpp tracker.cpp detector_color.cpp)
 target_link_libraries(simple_od ${OpenCV_LIBS})
 
-# add_executable(match_example match_example.cpp)
-# target_link_libraries(match_example ${OpenCV_LIBS})
+add_executable(match_example match_example.cpp)
+target_link_libraries(match_example ${OpenCV_LIBS})
 
 
 if(HAS_RS)

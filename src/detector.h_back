@@ -19,8 +19,6 @@
 #include "opencv2/opencv.hpp"
 
 using namespace std; 
-using namespace cv;
-using namespace cv::xfeatures2d;
 
 class CDetector
 {
@@ -46,7 +44,7 @@ public:
 
     cv::FeatureDetector * mpDetector;  
     cv::DescriptorExtractor * mpDescriptor; 
-    
+
 
 };
 

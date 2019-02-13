@@ -53,7 +53,7 @@ void CDetector::init(cv::Mat img)
 	// mpDetector = new cv::DenseFeatureDetector(); 
 	// mpDetector = new cv::GFTTDetector(); 
 	// mpDetector = new cv::MSER(); 
-	mpDetector =  ORB::create(); // new cv::ORB(); 
+	mpDetector = new cv::ORB(); 
 	// mpDetector = new cv::StarFeatureDetector(); 
 	// mpDetector = new cv::BRISK(); 
 
@@ -61,8 +61,7 @@ void CDetector::init(cv::Mat img)
 	// mpDescriptor = new cv::SURF(600.); 
 	// mpDescriptor = new cv::SIFT();      
 	// mpDescriptor = new cv::FREAK();      
-	// mpDescriptor = // new cv::ORB();   
-	mpDescriptor = ORB::create(); 
+	mpDescriptor = new cv::ORB();      
 	// mpDescriptor = new cv::BRISK();      
 
 	// mpDescriptor = new cv::BriefDescriptorExtractor();      
